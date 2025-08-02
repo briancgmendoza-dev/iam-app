@@ -19,9 +19,4 @@ router.post('/:groupId/users', (req, res) => groupController.assignUsersToGroup(
 router.delete('/:groupId/users', (req, res) => groupController.removeUsersFromGroup(req, res));
 router.get('/:groupId/users', (req, res) => groupController.getUsersByGroupId(req, res));
 
-// Role-Group relationship routes
-router.post('/:groupId/roles', (req, res) => groupController.assignRolesToGroup(req, res));
-router.delete('/:groupId/roles', (req, res) => groupController.removeRolesFromGroup(req, res));
-router.get('/:groupId/roles', (req, res) => groupController.getGroupRoles(req, res));
-
 export default router;

@@ -72,7 +72,7 @@ export class RoleService {
     await this.roleRepository.remove(role);
   }
 
-  async assignGroupsToRole(roleId: number, groupIds: number[]): Promise<Role> {
+  async assignRolesToGroup(roleId: number, groupIds: number[]): Promise<Role> {
     const role = await this.roleRepository.findOne({
       where: { id: roleId },
       relations: ['groups'],
@@ -90,12 +90,12 @@ export class RoleService {
 
     const existingGroupIds = role.groups.map(group => group.id);
     const newGroups = groups.filter(group => !existingGroupIds.includes(group.id));
-
     role.groups = [...role.groups, ...newGroups];
+
     return this.roleRepository.save(role);
   }
 
-  async removeGroupsFromRole(roleId: number, groupIds: number[]): Promise<Role> {
+  async removeRolesFromGroup(roleId: number, groupIds: number[]): Promise<Role> {
     const role = await this.roleRepository.findOne({
       where: { id: roleId },
       relations: ['groups'],
@@ -106,10 +106,11 @@ export class RoleService {
     }
 
     role.groups = role.groups.filter(group => !groupIds.includes(group.id));
+
     return this.roleRepository.save(role);
   }
 
-  async getRoleGroups(roleId: number): Promise<Group[]> {
+  async getGroupRoles(roleId: number): Promise<Group[]> {
     const role = await this.roleRepository.findOne({
       where: { id: roleId },
       relations: ['groups'],

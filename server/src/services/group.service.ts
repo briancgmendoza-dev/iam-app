@@ -1,12 +1,10 @@
 import { AppDataSource } from '../db/data-source';
 import { Group } from '../entities/group';
-import { Role } from '../entities/role';
 import { User } from '../entities/user';
 import { In } from 'typeorm';
 
 export class GroupService {
   private groupRepository = AppDataSource.getRepository(Group);
-  private roleRepository = AppDataSource.getRepository(Role);
   private userRepository = AppDataSource.getRepository(User);
 
   async createGroup(name: string, description?: string): Promise<Group> {
@@ -123,56 +121,5 @@ export class GroupService {
     }
 
     return group.users;
-  }
-
-  async assignRolesToGroup(groupId: number, roleIds: number[]): Promise<Group> {
-    const group = await this.groupRepository.findOne({
-      where: { id: groupId },
-      relations: ['roles'],
-    });
-
-    if (!group) {
-      throw new Error('Group not found');
-    }
-
-    const roles = await this.roleRepository.findBy({ id: In(roleIds) });
-
-    if (roles.length !== roleIds.length) {
-      throw new Error('One or more roles not found');
-    }
-
-    const existingRoleIds = group.roles.map(role => role.id);
-    const newRoles = roles.filter(role => !existingRoleIds.includes(role.id));
-    group.roles = [...group.roles, ...newRoles];
-
-    return this.groupRepository.save(group);
-  }
-
-  async removeRolesFromGroup(groupId: number, roleIds: number[]): Promise<Group> {
-    const group = await this.groupRepository.findOne({
-      where: { id: groupId },
-      relations: ['roles'],
-    });
-
-    if (!group) {
-      throw new Error('Group not found');
-    }
-
-    group.roles = group.roles.filter(role => !roleIds.includes(role.id));
-
-    return this.groupRepository.save(group);
-  }
-
-  async getGroupRoles(groupId: number): Promise<Role[]> {
-    const group = await this.groupRepository.findOne({
-      where: { id: groupId },
-      relations: ['roles'],
-    });
-
-    if (!group) {
-      throw new Error('Group not found');
-    }
-
-    return group.roles;
   }
 }

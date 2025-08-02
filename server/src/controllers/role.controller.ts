@@ -127,7 +127,7 @@ export class RoleController {
     }
   }
 
-  async assignGroupsToRole(req: Request, res: Response): Promise<void> {
+  async assignRolesToGroup(req: Request, res: Response): Promise<void> {
     try {
       const roleId = parseInt(req.params.roleId);
       const { groupIds } = req.body;
@@ -148,7 +148,7 @@ export class RoleController {
         return;
       }
 
-      const updatedRole = await this.roleService.assignGroupsToRole(roleId, groupIds);
+      const updatedRole = await this.roleService.assignRolesToGroup(roleId, groupIds);
 
       res.status(200).json(updatedRole);
     } catch (error) {
@@ -167,7 +167,7 @@ export class RoleController {
     }
   }
 
-  async removeGroupsFromRole(req: Request, res: Response): Promise<void> {
+  async removeRolesFromGroup(req: Request, res: Response): Promise<void> {
     try {
       const roleId = parseInt(req.params.roleId);
       const { groupIds } = req.body;
@@ -182,7 +182,7 @@ export class RoleController {
         return;
       }
 
-      const updatedRole = await this.roleService.removeGroupsFromRole(roleId, groupIds);
+      const updatedRole = await this.roleService.removeRolesFromGroup(roleId, groupIds);
 
       res.status(200).json(updatedRole);
     } catch (error) {
@@ -198,7 +198,7 @@ export class RoleController {
     }
   }
 
-  async getRoleGroups(req: Request, res: Response): Promise<void> {
+  async getGroupRoles(req: Request, res: Response): Promise<void> {
     try {
       const roleId = parseInt(req.params.roleId);
 
@@ -207,7 +207,7 @@ export class RoleController {
         return;
       }
 
-      const groups = await this.roleService.getRoleGroups(roleId);
+      const groups = await this.roleService.getGroupRoles(roleId);
 
       res.status(200).json(groups);
     } catch (error) {
