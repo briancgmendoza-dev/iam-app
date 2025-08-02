@@ -12,6 +12,6 @@ export class Role {
   @Column({ nullable: true })
   description?: string;
 
-  @ManyToMany(() => Group, (group) => group.roles)
+  @ManyToMany(() => Group, group => group.roles)
   groups!: Group[];
 }

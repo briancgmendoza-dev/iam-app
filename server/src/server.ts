@@ -7,6 +7,7 @@ import passport from './config/passport';
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import groupRoutes from './routes/group.routes';
+import roleRoutes from './routes/role.routes';
 
 dotenv.config();
 const app = express();
@@ -22,6 +23,7 @@ AppDataSource.initialize()
     app.use('/', authRoutes);
     app.use('/users', userRoutes);
     app.use('/groups', groupRoutes);
+    app.use('/roles', roleRoutes);
 
     const PORT = process.env.PORT || 8080;
     app.listen(PORT, () => {

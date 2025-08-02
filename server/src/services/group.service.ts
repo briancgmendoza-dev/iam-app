@@ -166,4 +166,74 @@ export class GroupService {
 
     return group.users;
   }
+
+  async assignRolesToGroup(groupId: number, roleIds: number[]): Promise<Group> {
+    if (!groupId || groupId <= 0) {
+      throw new Error('Invalid group ID');
+    }
+
+    if (!roleIds || roleIds.length === 0) {
+      throw new Error('Role IDs are required');
+    }
+
+    const group = await this.groupRepository.findOne({
+      where: { id: groupId },
+      relations: ['roles'],
+    });
+
+    if (!group) {
+      throw new Error('Group not found');
+    }
+
+    const roles = await this.roleRepository.findBy({ id: In(roleIds) });
+
+    if (roles.length !== roleIds.length) {
+      throw new Error('One or more roles not found');
+    }
+
+    const existingRoleIds = group.roles.map(role => role.id);
+    const newRoles = roles.filter(role => !existingRoleIds.includes(role.id));
+
+    group.roles = [...group.roles, ...newRoles];
+    return this.groupRepository.save(group);
+  }
+
+  async removeRolesFromGroup(groupId: number, roleIds: number[]): Promise<Group> {
+    if (!groupId || groupId <= 0) {
+      throw new Error('Invalid group ID');
+    }
+
+    if (!roleIds || roleIds.length === 0) {
+      throw new Error('Role IDs are required');
+    }
+
+    const group = await this.groupRepository.findOne({
+      where: { id: groupId },
+      relations: ['roles'],
+    });
+
+    if (!group) {
+      throw new Error('Group not found');
+    }
+
+    group.roles = group.roles.filter(role => !roleIds.includes(role.id));
+    return this.groupRepository.save(group);
+  }
+
+  async getGroupRoles(groupId: number): Promise<Role[]> {
+    if (!groupId || groupId <= 0) {
+      throw new Error('Invalid group ID');
+    }
+
+    const group = await this.groupRepository.findOne({
+      where: { id: groupId },
+      relations: ['roles'],
+    });
+
+    if (!group) {
+      throw new Error('Group not found');
+    }
+
+    return group.roles;
+  }
 }
