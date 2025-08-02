@@ -53,12 +53,19 @@ export class UserController {
         return;
       }
 
-      if (!username && !password) {
+      const cleanedUsername = username?.replace(/\s+/g, '').toLowerCase();
+      const cleanedPassword = password?.replace(/\s+/g, '').toLowerCase();
+
+      if (!cleanedUsername && !cleanedPassword) {
         res.status(400).json({ error: 'Username or password is required' });
         return;
       }
 
-      const updatedUser = await this.userService.updateUser(userId, username, password);
+      const updatedUser = await this.userService.updateUser(
+        userId,
+        cleanedUsername,
+        cleanedPassword
+      );
       res.status(200).json(updatedUser);
     } catch (error) {
       if (error instanceof Error) {
