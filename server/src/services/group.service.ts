@@ -10,20 +10,14 @@ export class GroupService {
   private userRepository = AppDataSource.getRepository(User);
 
   async createGroup(name: string, description?: string): Promise<Group> {
-    if (!name || name.trim().length === 0) {
-      throw new Error('Group name is required');
-    }
-
-    const existingGroup = await this.groupRepository.findOneBy({ name: name.trim() });
+    const existingGroup = await this.groupRepository.findOneBy({ name });
 
     if (existingGroup) {
       throw new Error('Group already exists');
     }
 
-    const group = this.groupRepository.create({
-      name: name.trim(),
-      description: description?.trim(),
-    });
+    const group = this.groupRepository.create({ name, description });
+
     return this.groupRepository.save(group);
   }
 
@@ -34,10 +28,6 @@ export class GroupService {
   }
 
   async getGroupById(id: number): Promise<Group | null> {
-    if (!id || id <= 0) {
-      throw new Error('Invalid group ID');
-    }
-
     return this.groupRepository.findOne({
       where: { id },
       relations: ['users', 'roles'],
@@ -45,10 +35,6 @@ export class GroupService {
   }
 
   async updateGroup(id: number, name?: string, description?: string): Promise<Group> {
-    if (!id || id <= 0) {
-      throw new Error('Invalid group ID');
-    }
-
     const group = await this.groupRepository.findOneBy({ id });
 
     if (!group) {
@@ -56,30 +42,21 @@ export class GroupService {
     }
 
     if (name !== undefined) {
-      const trimmedName = name.trim();
-      if (trimmedName.length === 0) {
-        throw new Error('Group name cannot be empty');
-      }
-
-      const existingGroup = await this.groupRepository.findOneBy({ name: trimmedName });
+      const existingGroup = await this.groupRepository.findOneBy({ name });
       if (existingGroup && existingGroup.id !== id) {
         throw new Error('Group name already exists');
       }
-      group.name = trimmedName;
+      group.name = name;
     }
 
     if (description !== undefined) {
-      group.description = description?.trim();
+      group.description = description;
     }
 
     return this.groupRepository.save(group);
   }
 
   async deleteGroup(id: number): Promise<void> {
-    if (!id || id <= 0) {
-      throw new Error('Invalid group ID');
-    }
-
     const group = await this.groupRepository.findOne({
       where: { id },
       relations: ['users', 'roles'],
@@ -98,14 +75,6 @@ export class GroupService {
   }
 
   async assignUsersToGroup(groupId: number, userIds: number[]): Promise<Group> {
-    if (!groupId || groupId <= 0) {
-      throw new Error('Invalid group ID');
-    }
-
-    if (!userIds || userIds.length === 0) {
-      throw new Error('User IDs are required');
-    }
-
     const group = await this.groupRepository.findOne({
       where: { id: groupId },
       relations: ['users'],
@@ -123,20 +92,12 @@ export class GroupService {
 
     const existingUserIds = group.users.map(user => user.id);
     const newUsers = users.filter(user => !existingUserIds.includes(user.id));
-
     group.users = [...group.users, ...newUsers];
+
     return this.groupRepository.save(group);
   }
 
   async removeUsersFromGroup(groupId: number, userIds: number[]): Promise<Group> {
-    if (!groupId || groupId <= 0) {
-      throw new Error('Invalid group ID');
-    }
-
-    if (!userIds || userIds.length === 0) {
-      throw new Error('User IDs are required');
-    }
-
     const group = await this.groupRepository.findOne({
       where: { id: groupId },
       relations: ['users'],
@@ -147,14 +108,11 @@ export class GroupService {
     }
 
     group.users = group.users.filter(user => !userIds.includes(user.id));
+
     return this.groupRepository.save(group);
   }
 
   async getUsersByGroupId(groupId: number): Promise<User[]> {
-    if (!groupId || groupId <= 0) {
-      throw new Error('Invalid group ID');
-    }
-
     const group = await this.groupRepository.findOne({
       where: { id: groupId },
       relations: ['users'],
@@ -168,14 +126,6 @@ export class GroupService {
   }
 
   async assignRolesToGroup(groupId: number, roleIds: number[]): Promise<Group> {
-    if (!groupId || groupId <= 0) {
-      throw new Error('Invalid group ID');
-    }
-
-    if (!roleIds || roleIds.length === 0) {
-      throw new Error('Role IDs are required');
-    }
-
     const group = await this.groupRepository.findOne({
       where: { id: groupId },
       relations: ['roles'],
@@ -193,20 +143,12 @@ export class GroupService {
 
     const existingRoleIds = group.roles.map(role => role.id);
     const newRoles = roles.filter(role => !existingRoleIds.includes(role.id));
-
     group.roles = [...group.roles, ...newRoles];
+
     return this.groupRepository.save(group);
   }
 
   async removeRolesFromGroup(groupId: number, roleIds: number[]): Promise<Group> {
-    if (!groupId || groupId <= 0) {
-      throw new Error('Invalid group ID');
-    }
-
-    if (!roleIds || roleIds.length === 0) {
-      throw new Error('Role IDs are required');
-    }
-
     const group = await this.groupRepository.findOne({
       where: { id: groupId },
       relations: ['roles'],
@@ -217,14 +159,11 @@ export class GroupService {
     }
 
     group.roles = group.roles.filter(role => !roleIds.includes(role.id));
+
     return this.groupRepository.save(group);
   }
 
   async getGroupRoles(groupId: number): Promise<Role[]> {
-    if (!groupId || groupId <= 0) {
-      throw new Error('Invalid group ID');
-    }
-
     const group = await this.groupRepository.findOne({
       where: { id: groupId },
       relations: ['roles'],

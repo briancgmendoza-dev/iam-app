@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { GroupService } from '../services/group.service';
-import { isNotNumeric } from '../utils';
+import { isNotNumeric, hasLeadingOrTrailingWhitespace } from '../utils';
 
 export class GroupController {
   private groupService = new GroupService();
@@ -9,12 +9,13 @@ export class GroupController {
     try {
       const { name, description } = req.body;
 
-      if (!name || !/^\S(.*\S)?$/.test(name)) {
+      if (!name || hasLeadingOrTrailingWhitespace(name)) {
         res.status(400).json({ error: 'Group name must not start or end with whitespace' });
         return;
       }
 
       const group = await this.groupService.createGroup(name, description);
+
       res.status(201).json(group);
     } catch (error) {
       if (error instanceof Error) {
@@ -32,6 +33,7 @@ export class GroupController {
   async getAllGroups(req: Request, res: Response): Promise<void> {
     try {
       const groups = await this.groupService.getAllGroups();
+
       res.status(200).json(groups);
     } catch (error) {
       if (error instanceof Error) {
@@ -52,6 +54,7 @@ export class GroupController {
       }
 
       const group = await this.groupService.getGroupById(groupId);
+
       if (!group) {
         res.status(404).json({ error: 'Group not found' });
         return;
@@ -77,12 +80,13 @@ export class GroupController {
         return;
       }
 
-      if (!name || name.trim().length === 0) {
-        res.status(400).json({ error: 'Group name is required' });
+      if (!name || hasLeadingOrTrailingWhitespace(name)) {
+        res.status(400).json({ error: 'Group name must not start or end with whitespace' });
         return;
       }
 
       const updatedGroup = await this.groupService.updateGroup(groupId, name, description);
+
       res.status(200).json(updatedGroup);
     } catch (error) {
       if (error instanceof Error) {
@@ -109,6 +113,7 @@ export class GroupController {
       }
 
       await this.groupService.deleteGroup(groupId);
+
       res.status(204).send();
     } catch (error) {
       if (error instanceof Error) {
@@ -133,6 +138,7 @@ export class GroupController {
       }
 
       const users = await this.groupService.getUsersByGroupId(groupId);
+
       res.status(200).json(users);
     } catch (error) {
       if (error instanceof Error) {
@@ -169,6 +175,7 @@ export class GroupController {
       }
 
       const updatedGroup = await this.groupService.assignUsersToGroup(groupId, userIds);
+
       res.status(200).json(updatedGroup);
     } catch (error) {
       if (error instanceof Error) {
@@ -202,6 +209,7 @@ export class GroupController {
       }
 
       const updatedGroup = await this.groupService.removeUsersFromGroup(groupId, userIds);
+
       res.status(200).json(updatedGroup);
     } catch (error) {
       if (error instanceof Error) {
@@ -238,6 +246,7 @@ export class GroupController {
       }
 
       const updatedGroup = await this.groupService.assignRolesToGroup(groupId, roleIds);
+
       res.status(200).json(updatedGroup);
     } catch (error) {
       if (error instanceof Error) {
@@ -271,6 +280,7 @@ export class GroupController {
       }
 
       const updatedGroup = await this.groupService.removeRolesFromGroup(groupId, roleIds);
+
       res.status(200).json(updatedGroup);
     } catch (error) {
       if (error instanceof Error) {

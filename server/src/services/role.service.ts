@@ -8,20 +8,13 @@ export class RoleService {
   private groupRepository = AppDataSource.getRepository(Group);
 
   async createRole(name: string, description?: string): Promise<Role> {
-    if (!name || name.trim().length === 0) {
-      throw new Error('Role name is required');
-    }
-
-    const existingRole = await this.roleRepository.findOneBy({ name: name.trim() });
+    const existingRole = await this.roleRepository.findOneBy({ name });
 
     if (existingRole) {
       throw new Error('Role already exists');
     }
 
-    const role = this.roleRepository.create({
-      name: name.trim(),
-      description: description?.trim(),
-    });
+    const role = this.roleRepository.create({ name, description });
     return this.roleRepository.save(role);
   }
 
@@ -32,10 +25,6 @@ export class RoleService {
   }
 
   async getRoleById(id: number): Promise<Role | null> {
-    if (!id || id <= 0) {
-      throw new Error('Invalid role ID');
-    }
-
     return this.roleRepository.findOne({
       where: { id },
       relations: ['groups'],
@@ -43,10 +32,6 @@ export class RoleService {
   }
 
   async updateRole(id: number, name?: string, description?: string): Promise<Role> {
-    if (!id || id <= 0) {
-      throw new Error('Invalid role ID');
-    }
-
     const role = await this.roleRepository.findOneBy({ id });
 
     if (!role) {
@@ -54,30 +39,21 @@ export class RoleService {
     }
 
     if (name !== undefined) {
-      const trimmedName = name.trim();
-      if (trimmedName.length === 0) {
-        throw new Error('Role name cannot be empty');
-      }
-
-      const existingRole = await this.roleRepository.findOneBy({ name: trimmedName });
+      const existingRole = await this.roleRepository.findOneBy({ name });
       if (existingRole && existingRole.id !== id) {
         throw new Error('Role name already exists');
       }
-      role.name = trimmedName;
+      role.name = name;
     }
 
     if (description !== undefined) {
-      role.description = description?.trim();
+      role.description = description;
     }
 
     return this.roleRepository.save(role);
   }
 
   async deleteRole(id: number): Promise<void> {
-    if (!id || id <= 0) {
-      throw new Error('Invalid role ID');
-    }
-
     const role = await this.roleRepository.findOne({
       where: { id },
       relations: ['groups'],
@@ -97,14 +73,6 @@ export class RoleService {
   }
 
   async assignGroupsToRole(roleId: number, groupIds: number[]): Promise<Role> {
-    if (!roleId || roleId <= 0) {
-      throw new Error('Invalid role ID');
-    }
-
-    if (!groupIds || groupIds.length === 0) {
-      throw new Error('Group IDs are required');
-    }
-
     const role = await this.roleRepository.findOne({
       where: { id: roleId },
       relations: ['groups'],
@@ -128,14 +96,6 @@ export class RoleService {
   }
 
   async removeGroupsFromRole(roleId: number, groupIds: number[]): Promise<Role> {
-    if (!roleId || roleId <= 0) {
-      throw new Error('Invalid role ID');
-    }
-
-    if (!groupIds || groupIds.length === 0) {
-      throw new Error('Group IDs are required');
-    }
-
     const role = await this.roleRepository.findOne({
       where: { id: roleId },
       relations: ['groups'],
@@ -150,10 +110,6 @@ export class RoleService {
   }
 
   async getRoleGroups(roleId: number): Promise<Group[]> {
-    if (!roleId || roleId <= 0) {
-      throw new Error('Invalid role ID');
-    }
-
     const role = await this.roleRepository.findOne({
       where: { id: roleId },
       relations: ['groups'],

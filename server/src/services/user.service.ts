@@ -25,11 +25,9 @@ export class UserService {
 
     if (username !== undefined) {
       const existingUser = await this.userRepository.findOneBy({ username });
-
       if (existingUser && existingUser.id !== id) {
         throw new Error('Username already exists');
       }
-
       user.username = username;
     }
 

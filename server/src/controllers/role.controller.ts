@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { RoleService } from '../services/role.service';
-import { isNotNumeric } from '../utils';
+import { isNotNumeric, hasLeadingOrTrailingWhitespace } from '../utils';
 
 export class RoleController {
   private roleService = new RoleService();
@@ -9,12 +9,13 @@ export class RoleController {
     try {
       const { name, description } = req.body;
 
-      if (!name || name.trim().length === 0) {
-        res.status(400).json({ error: 'Role name is required' });
+      if (!name || hasLeadingOrTrailingWhitespace(name)) {
+        res.status(400).json({ error: 'Role name must not start or end with whitespace' });
         return;
       }
 
       const role = await this.roleService.createRole(name, description);
+
       res.status(201).json(role);
     } catch (error) {
       if (error instanceof Error) {
@@ -32,6 +33,7 @@ export class RoleController {
   async getRoles(req: Request, res: Response): Promise<void> {
     try {
       const roles = await this.roleService.getAllRoles();
+
       res.status(200).json(roles);
     } catch (error) {
       if (error instanceof Error) {
@@ -42,7 +44,7 @@ export class RoleController {
     }
   }
 
-  async getRole(req: Request, res: Response): Promise<void> {
+  async getRoleById(req: Request, res: Response): Promise<void> {
     try {
       const roleId = parseInt(req.params.id);
 
@@ -77,12 +79,13 @@ export class RoleController {
         return;
       }
 
-      if (!name || name.trim().length === 0) {
-        res.status(400).json({ error: 'Role name is required' });
+      if (!name || hasLeadingOrTrailingWhitespace(name)) {
+        res.status(400).json({ error: 'Role name must not start or end with whitespace' });
         return;
       }
 
       const updatedRole = await this.roleService.updateRole(roleId, name, description);
+
       res.status(200).json(updatedRole);
     } catch (error) {
       if (error instanceof Error) {
@@ -109,6 +112,7 @@ export class RoleController {
       }
 
       await this.roleService.deleteRole(roleId);
+
       res.status(204).send();
     } catch (error) {
       if (error instanceof Error) {
@@ -145,6 +149,7 @@ export class RoleController {
       }
 
       const updatedRole = await this.roleService.assignGroupsToRole(roleId, groupIds);
+
       res.status(200).json(updatedRole);
     } catch (error) {
       if (error instanceof Error) {
@@ -178,6 +183,7 @@ export class RoleController {
       }
 
       const updatedRole = await this.roleService.removeGroupsFromRole(roleId, groupIds);
+
       res.status(200).json(updatedRole);
     } catch (error) {
       if (error instanceof Error) {
@@ -202,6 +208,7 @@ export class RoleController {
       }
 
       const groups = await this.roleService.getRoleGroups(roleId);
+
       res.status(200).json(groups);
     } catch (error) {
       if (error instanceof Error) {

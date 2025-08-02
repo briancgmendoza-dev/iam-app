@@ -13,3 +13,11 @@ export const cleanStringInput = (string: string) => {
 
   return string.replace(/\s+/g, '').toLowerCase();
 };
+
+export const hasLeadingOrTrailingWhitespace = (string: string): boolean => {
+  if (typeof string !== 'string') {
+    throw new Error('Input must be a string');
+  }
+
+  return /^\s|\s$/.test(string);
+};

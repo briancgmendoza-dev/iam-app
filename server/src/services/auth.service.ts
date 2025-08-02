@@ -18,14 +18,11 @@ export class AuthService {
       username,
       password: hashedPassword,
     });
+
     await this.userRepository.save(user);
   }
 
   async login(username: string, password: string): Promise<string> {
-    if (!username || !password) {
-      throw new Error('Username and password are required');
-    }
-
     const user = await this.userRepository.findOneBy({ username });
 
     if (!user || !(await bcrypt.compare(password, user.password))) {

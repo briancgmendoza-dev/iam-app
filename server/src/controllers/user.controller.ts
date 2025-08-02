@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { UserService } from '../services/user.service';
+import { cleanStringInput, isNotNumeric } from '../utils';
 
 export class UserController {
   private userService = new UserService();
@@ -7,6 +8,7 @@ export class UserController {
   async getUsers(req: Request, res: Response): Promise<void> {
     try {
       const users = await this.userService.getAllUsers();
+
       res.status(200).json(users);
     } catch (error) {
       if (error instanceof Error) {
@@ -17,11 +19,11 @@ export class UserController {
     }
   }
 
-  async getUser(req: Request, res: Response): Promise<void> {
+  async getUserById(req: Request, res: Response): Promise<void> {
     try {
       const userId = parseInt(req.params.id);
 
-      if (isNaN(userId) || !/^\d+$/.test(req.params.id)) {
+      if (isNaN(userId) || isNotNumeric(req.params.id)) {
         res.status(400).json({ error: 'Invalid user ID' });
         return;
       }
@@ -48,16 +50,16 @@ export class UserController {
       const userId = parseInt(req.params.id);
       const { username, password } = req.body;
 
-      if (isNaN(userId) || !/^\d+$/.test(req.params.id)) {
+      if (isNaN(userId) || isNotNumeric(req.params.id)) {
         res.status(400).json({ error: 'Invalid user ID' });
         return;
       }
 
-      const cleanedUsername = username?.replace(/\s+/g, '').toLowerCase();
-      const cleanedPassword = password?.replace(/\s+/g, '').toLowerCase();
+      const cleanedUsername = cleanStringInput(username);
+      const cleanedPassword = cleanStringInput(password);
 
       if (!cleanedUsername && !cleanedPassword) {
-        res.status(400).json({ error: 'Username or password is required' });
+        res.status(400).json({ error: 'Username or Password is required' });
         return;
       }
 
@@ -66,6 +68,7 @@ export class UserController {
         cleanedUsername,
         cleanedPassword
       );
+
       res.status(200).json(updatedUser);
     } catch (error) {
       if (error instanceof Error) {
@@ -87,7 +90,7 @@ export class UserController {
       const userId = parseInt(req.params.id);
       const currentUserId = (req.user as any).id;
 
-      if (isNaN(userId) || !/^\d+$/.test(req.params.id)) {
+      if (isNaN(userId) || isNotNumeric(req.params.id)) {
         res.status(400).json({ error: 'Invalid user ID' });
         return;
       }
@@ -98,6 +101,7 @@ export class UserController {
       }
 
       await this.userService.deleteUser(userId);
+
       res.status(204).send();
     } catch (error) {
       if (error instanceof Error) {

@@ -10,7 +10,7 @@ router.use(jwtAuth);
 // Basic CRUD routes for roles
 router.post('/', (req, res) => roleController.createRole(req, res));
 router.get('/', (req, res) => roleController.getRoles(req, res));
-router.get('/:id', (req, res) => roleController.getRole(req, res));
+router.get('/:id', (req, res) => roleController.getRoleById(req, res));
 router.put('/:id', (req, res) => roleController.updateRole(req, res));
 router.delete('/:id', (req, res) => roleController.deleteRole(req, res));
 

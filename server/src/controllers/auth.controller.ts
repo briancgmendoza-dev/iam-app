@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { AuthService } from '../services/auth.service';
+import { cleanStringInput } from '../utils';
 
 export class AuthController {
   private authService = new AuthService();
@@ -8,20 +9,16 @@ export class AuthController {
     try {
       const { username, password } = req.body;
 
-      const cleanedUsername = username?.replace(/\s+/g, '').toLowerCase();
-      const cleanedPassword = password?.replace(/\s+/g, '').toLowerCase();
+      const cleanedUsername = cleanStringInput(username);
+      const cleanedPassword = cleanStringInput(password);
 
-      if (!cleanedUsername || cleanedUsername.length === 0) {
-        res.status(400).json({ error: 'Username is required' });
-        return;
-      }
-
-      if (!cleanedPassword || cleanedPassword.length === 0) {
-        res.status(400).json({ error: 'Password is required' });
+      if (!cleanedUsername || !cleanedPassword) {
+        res.status(400).json({ error: 'Username and Password are required' });
         return;
       }
 
       await this.authService.register(cleanedUsername, cleanedPassword);
+
       res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
       if (error instanceof Error) {
@@ -40,20 +37,16 @@ export class AuthController {
     try {
       const { username, password } = req.body;
 
-      const cleanedUsername = username?.replace(/\s+/g, '').toLowerCase();
-      const cleanedPassword = password?.replace(/\s+/g, '').toLowerCase();
+      const cleanedUsername = cleanStringInput(username);
+      const cleanedPassword = cleanStringInput(password);
 
-      if (!cleanedUsername || cleanedUsername.length === 0) {
-        res.status(400).json({ error: 'Username is required' });
-        return;
-      }
-
-      if (!cleanedPassword || cleanedPassword.length === 0) {
-        res.status(400).json({ error: 'Password is required' });
+      if (!cleanedUsername || !cleanedPassword) {
+        res.status(400).json({ error: 'Username and Password are required' });
         return;
       }
 
       const token = await this.authService.login(cleanedUsername, cleanedPassword);
+
       res.status(200).json({ token });
     } catch (error) {
       if (error instanceof Error) {
