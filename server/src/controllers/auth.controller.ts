@@ -8,12 +8,20 @@ export class AuthController {
     try {
       const { username, password } = req.body;
 
-      if (!username || !password) {
-        res.status(400).json({ error: 'Username and password are required' });
+      const cleanedUsername = username?.replace(/\s+/g, '').toLowerCase();
+      const cleanedPassword = password?.replace(/\s+/g, '').toLowerCase();
+
+      if (!cleanedUsername || cleanedUsername.length === 0) {
+        res.status(400).json({ error: 'Username is required' });
         return;
       }
 
-      await this.authService.register(username, password);
+      if (!cleanedPassword || cleanedPassword.length === 0) {
+        res.status(400).json({ error: 'Password is required' });
+        return;
+      }
+
+      await this.authService.register(cleanedUsername, cleanedPassword);
       res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
       if (error instanceof Error) {
@@ -32,12 +40,20 @@ export class AuthController {
     try {
       const { username, password } = req.body;
 
-      if (!username || !password) {
-        res.status(400).json({ error: 'Username and password are required' });
+      const cleanedUsername = username?.replace(/\s+/g, '').toLowerCase();
+      const cleanedPassword = password?.replace(/\s+/g, '').toLowerCase();
+
+      if (!cleanedUsername || cleanedUsername.length === 0) {
+        res.status(400).json({ error: 'Username is required' });
         return;
       }
 
-      const token = await this.authService.login(username, password);
+      if (!cleanedPassword || cleanedPassword.length === 0) {
+        res.status(400).json({ error: 'Password is required' });
+        return;
+      }
+
+      const token = await this.authService.login(cleanedUsername, cleanedPassword);
       res.status(200).json({ token });
     } catch (error) {
       if (error instanceof Error) {

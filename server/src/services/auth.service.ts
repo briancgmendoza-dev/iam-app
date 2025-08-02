@@ -7,23 +7,15 @@ export class AuthService {
   private userRepository = AppDataSource.getRepository(User);
 
   async register(username: string, password: string): Promise<void> {
-    if (!username || username.trim().length === 0) {
-      throw new Error('Username is required');
-    }
-
-    if (!password || password.trim().length === 0) {
-      throw new Error('Password is required');
-    }
-
-    const existingUser = await this.userRepository.findOneBy({ username: username.trim() });
+    const existingUser = await this.userRepository.findOneBy({ username });
 
     if (existingUser) {
       throw new Error('User already exists');
     }
 
-    const hashedPassword = await bcrypt.hash(password.trim(), 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
     const user = this.userRepository.create({
-      username: username.trim(),
+      username,
       password: hashedPassword,
     });
     await this.userRepository.save(user);
@@ -34,9 +26,9 @@ export class AuthService {
       throw new Error('Username and password are required');
     }
 
-    const user = await this.userRepository.findOneBy({ username: username.trim() });
+    const user = await this.userRepository.findOneBy({ username });
 
-    if (!user || !(await bcrypt.compare(password.trim(), user.password))) {
+    if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new Error('Invalid username or password');
     }
 
