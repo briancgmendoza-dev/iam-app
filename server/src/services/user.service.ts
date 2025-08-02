@@ -10,10 +10,6 @@ export class UserService {
   }
 
   async getUserById(id: number): Promise<User | null> {
-    if (!id || isNaN(id) || id <= 0) {
-      throw new Error('Invalid user ID');
-    }
-
     return this.userRepository.findOne({
       where: { id },
       relations: ['groups'],
@@ -21,14 +17,6 @@ export class UserService {
   }
 
   async updateUser(id: number, username?: string, password?: string): Promise<User> {
-    if (!id || isNaN(id) || id <= 0) {
-      throw new Error('Invalid user ID');
-    }
-
-    if (username === undefined && password === undefined) {
-      throw new Error('Username or password is required');
-    }
-
     const user = await this.userRepository.findOneBy({ id });
 
     if (!user) {
@@ -36,26 +24,16 @@ export class UserService {
     }
 
     if (username !== undefined) {
-      const trimmedUsername = username.trim();
-
-      if (trimmedUsername.length === 0) {
-        throw new Error('Username cannot be empty');
-      }
-
-      const existingUser = await this.userRepository.findOneBy({ username: trimmedUsername });
+      const existingUser = await this.userRepository.findOneBy({ username });
 
       if (existingUser && existingUser.id !== id) {
         throw new Error('Username already exists');
       }
 
-      user.username = trimmedUsername;
+      user.username = username;
     }
 
     if (password !== undefined) {
-      if (password.trim().length === 0) {
-        throw new Error('Password cannot be empty');
-      }
-
       user.password = await bcrypt.hash(password, 10);
     }
 
@@ -63,10 +41,6 @@ export class UserService {
   }
 
   async deleteUser(id: number): Promise<void> {
-    if (!id || isNaN(id) || id <= 0) {
-      throw new Error('Invalid user ID');
-    }
-
     const user = await this.userRepository.findOne({
       where: { id },
       relations: ['groups'],
@@ -83,34 +57,4 @@ export class UserService {
 
     await this.userRepository.remove(user);
   }
-
-  // async getUserPermissions(id: number): Promise<any[]> {
-  //   if (!id || id <= 0) {
-  //     throw new Error('Invalid user ID');
-  //   }
-
-  //   const user = await this.userRepository.findOne({
-  //     where: { id },
-  //     relations: ["groups", "groups.roles", "groups.roles.permissions"]
-  //   });
-
-  //   if (!user) {
-  //     throw new Error('User not found');
-  //   }
-
-  //   // Flatten permissions from all groups and roles
-  //   const permissions: any[] = [];
-  //   user.groups?.forEach(group => {
-  //     group.roles?.forEach(role => {
-  //       role.permissions?.forEach(permission => {
-  //         // Avoid duplicates
-  //         if (!permissions.find(p => p.id === permission.id)) {
-  //           permissions.push(permission);
-  //         }
-  //       });
-  //     });
-  //   });
-
-  //   return permissions;
-  // }
 }
