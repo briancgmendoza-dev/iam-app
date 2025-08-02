@@ -21,7 +21,7 @@ export class UserController {
     try {
       const userId = parseInt(req.params.id);
 
-      if (isNaN(userId) || userId <= 0) {
+      if (isNaN(userId) || !/^\d+$/.test(req.params.id)) {
         res.status(400).json({ error: 'Invalid user ID' });
         return;
       }
@@ -48,7 +48,7 @@ export class UserController {
       const userId = parseInt(req.params.id);
       const { username, password } = req.body;
 
-      if (isNaN(userId) || userId <= 0) {
+      if (isNaN(userId) || !/^\d+$/.test(req.params.id)) {
         res.status(400).json({ error: 'Invalid user ID' });
         return;
       }
@@ -80,7 +80,7 @@ export class UserController {
       const userId = parseInt(req.params.id);
       const currentUserId = (req.user as any).id;
 
-      if (isNaN(userId) || userId <= 0) {
+      if (isNaN(userId) || !/^\d+$/.test(req.params.id)) {
         res.status(400).json({ error: 'Invalid user ID' });
         return;
       }
