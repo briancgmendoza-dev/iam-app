@@ -7,12 +7,12 @@ export class AccessControlController {
 
   async getMyPermissions(req: Request, res: Response): Promise<void> {
     try {
-      const userId = (req.user as any).id;
+      const userId = parseInt(req.params.id);
 
-      if (!userId || isNotNumeric(userId)) {
-        res
-          .status(401)
-          .json({ error: isNotNumeric(userId) ? 'Invalid User ID' : 'User not authenticated' });
+      if (!userId) {
+        res.status(401).json({
+          error: 'User not authenticated',
+        });
         return;
       }
 

@@ -10,7 +10,7 @@ router.use(jwtAuth);
 
 // Read
 router.get('/', (req, res) => moduleController.getModules(req, res));
-router.get('/:id', (req, res) => moduleController.getModule(req, res));
+router.get('/:id', (req, res) => moduleController.getModuleById(req, res));
 
 // Write
 router.post('/', checkPermission('Modules', 'create'), (req, res) =>

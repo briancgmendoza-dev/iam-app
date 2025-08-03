@@ -9,7 +9,7 @@ export class UserController {
     try {
       const users = await this.userService.getAllUsers();
 
-      res.status(200).json(users);
+      res.status(200).json({ data: users });
     } catch (error) {
       if (error instanceof Error) {
         res.status(500).json({ error: error.message });

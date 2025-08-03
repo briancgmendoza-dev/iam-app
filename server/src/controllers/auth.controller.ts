@@ -45,9 +45,9 @@ export class AuthController {
         return;
       }
 
-      const token = await this.authService.login(cleanedUsername, cleanedPassword);
+      const data = await this.authService.login(cleanedUsername, cleanedPassword);
 
-      res.status(200).json({ token });
+      res.status(200).json({ data: { user: data } });
     } catch (error) {
       if (error instanceof Error) {
         res.status(401).json({ error: error.message });
