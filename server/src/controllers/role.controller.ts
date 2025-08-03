@@ -1,0 +1,329 @@
+import { Request, Response } from 'express';
+import { RoleService } from '../services/role.service';
+import { isNotNumeric, hasLeadingOrTrailingWhitespace } from '../utils';
+
+export class RoleController {
+  private roleService = new RoleService();
+
+  async createRole(req: Request, res: Response): Promise<void> {
+    try {
+      const { name, description } = req.body;
+
+      if (!name || hasLeadingOrTrailingWhitespace(name)) {
+        res.status(400).json({
+          error: hasLeadingOrTrailingWhitespace(name)
+            ? 'Role name must not start or end with whitespace'
+            : 'Role name is required',
+        });
+        return;
+      }
+
+      const role = await this.roleService.createRole(name, description);
+
+      res.status(201).json(role);
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'Role already exists') {
+          res.status(409).json({ error: error.message });
+        } else {
+          res.status(500).json({ error: error.message });
+        }
+      } else {
+        res.status(500).json({ error: String(error) });
+      }
+    }
+  }
+
+  async getRoles(req: Request, res: Response): Promise<void> {
+    try {
+      const roles = await this.roleService.getAllRoles();
+
+      res.status(200).json(roles);
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(500).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: String(error) });
+      }
+    }
+  }
+
+  async getRoleById(req: Request, res: Response): Promise<void> {
+    try {
+      const roleId = parseInt(req.params.id);
+
+      if (isNaN(roleId) || isNotNumeric(req.params.id)) {
+        res.status(400).json({ error: 'Invalid role ID' });
+        return;
+      }
+
+      const role = await this.roleService.getRoleById(roleId);
+      if (!role) {
+        res.status(404).json({ error: 'Role not found' });
+        return;
+      }
+
+      res.status(200).json(role);
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(500).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: String(error) });
+      }
+    }
+  }
+
+  async updateRole(req: Request, res: Response): Promise<void> {
+    try {
+      const roleId = parseInt(req.params.id);
+      const { name, description } = req.body;
+
+      if (isNaN(roleId) || isNotNumeric(req.params.id)) {
+        res.status(400).json({ error: 'Invalid role ID' });
+        return;
+      }
+
+      if (!name || hasLeadingOrTrailingWhitespace(name)) {
+        res.status(400).json({
+          error: hasLeadingOrTrailingWhitespace(name)
+            ? 'Role name must not start or end with whitespace'
+            : 'Role name is required',
+        });
+        return;
+      }
+
+      const updatedRole = await this.roleService.updateRole(roleId, name, description);
+
+      res.status(200).json(updatedRole);
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'Role not found') {
+          res.status(404).json({ error: error.message });
+        } else if (error.message === 'Role name already exists') {
+          res.status(409).json({ error: error.message });
+        } else {
+          res.status(500).json({ error: error.message });
+        }
+      } else {
+        res.status(500).json({ error: String(error) });
+      }
+    }
+  }
+
+  async deleteRole(req: Request, res: Response): Promise<void> {
+    try {
+      const roleId = parseInt(req.params.id);
+
+      if (isNaN(roleId) || isNotNumeric(req.params.id)) {
+        res.status(400).json({ error: 'Invalid role ID' });
+        return;
+      }
+
+      await this.roleService.deleteRole(roleId);
+
+      res.status(204).send();
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'Role not found') {
+          res.status(404).json({ error: error.message });
+        } else {
+          res.status(500).json({ error: error.message });
+        }
+      } else {
+        res.status(500).json({ error: String(error) });
+      }
+    }
+  }
+
+  async assignGroupsToRole(req: Request, res: Response): Promise<void> {
+    try {
+      const roleId = parseInt(req.params.roleId);
+      const { groupIds } = req.body;
+
+      if (isNaN(roleId) || isNotNumeric(req.params.roleId)) {
+        res.status(400).json({ error: 'Invalid role ID' });
+        return;
+      }
+
+      if (!groupIds || !Array.isArray(groupIds) || groupIds.length === 0) {
+        res.status(400).json({ error: 'Group IDs array is required' });
+        return;
+      }
+
+      const invalidIds = groupIds.filter(id => !Number.isInteger(id) || id <= 0);
+      if (invalidIds.length > 0) {
+        res.status(400).json({ error: 'All group IDs must be positive integers' });
+        return;
+      }
+
+      const updatedRole = await this.roleService.assignGroupsToRole(roleId, groupIds);
+
+      res.status(200).json(updatedRole);
+    } catch (error) {
+      if (error instanceof Error) {
+        if (
+          error.message === 'Role not found' ||
+          error.message === 'One or more groups not found'
+        ) {
+          res.status(404).json({ error: error.message });
+        } else {
+          res.status(500).json({ error: error.message });
+        }
+      } else {
+        res.status(500).json({ error: String(error) });
+      }
+    }
+  }
+
+  async removeGroupsFromRole(req: Request, res: Response): Promise<void> {
+    try {
+      const roleId = parseInt(req.params.roleId);
+      const { groupIds } = req.body;
+
+      if (isNaN(roleId) || isNotNumeric(req.params.roleId)) {
+        res.status(400).json({ error: 'Invalid role ID' });
+        return;
+      }
+
+      if (!groupIds || !Array.isArray(groupIds) || groupIds.length === 0) {
+        res.status(400).json({ error: 'Group IDs array is required' });
+        return;
+      }
+
+      const updatedRole = await this.roleService.removeGroupsFromRole(roleId, groupIds);
+
+      res.status(200).json(updatedRole);
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'Role not found') {
+          res.status(404).json({ error: error.message });
+        } else {
+          res.status(500).json({ error: error.message });
+        }
+      } else {
+        res.status(500).json({ error: String(error) });
+      }
+    }
+  }
+
+  async getRoleGroups(req: Request, res: Response): Promise<void> {
+    try {
+      const roleId = parseInt(req.params.roleId);
+
+      if (isNaN(roleId) || isNotNumeric(req.params.roleId)) {
+        res.status(400).json({ error: 'Invalid role ID' });
+        return;
+      }
+
+      const groups = await this.roleService.getRoleGroups(roleId);
+
+      res.status(200).json(groups);
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'Role not found') {
+          res.status(404).json({ error: error.message });
+        } else {
+          res.status(500).json({ error: error.message });
+        }
+      } else {
+        res.status(500).json({ error: String(error) });
+      }
+    }
+  }
+
+  async assignPermissionsToRole(req: Request, res: Response): Promise<void> {
+    try {
+      const roleId = parseInt(req.params.roleId);
+      const { permissionIds } = req.body;
+
+      if (isNaN(roleId) || isNotNumeric(req.params.roleId)) {
+        res.status(400).json({ error: 'Invalid role ID' });
+        return;
+      }
+
+      if (!permissionIds || !Array.isArray(permissionIds) || permissionIds.length === 0) {
+        res.status(400).json({ error: 'Permission IDs array is required' });
+        return;
+      }
+
+      const invalidIds = permissionIds.filter(id => !Number.isInteger(id) || id <= 0);
+      if (invalidIds.length > 0) {
+        res.status(400).json({ error: 'All permission IDs must be positive integers' });
+        return;
+      }
+
+      const updatedRole = await this.roleService.assignPermissionsToRole(roleId, permissionIds);
+
+      res.status(200).json(updatedRole);
+    } catch (error) {
+      if (error instanceof Error) {
+        if (
+          error.message === 'Role not found' ||
+          error.message === 'One or more permissions not found'
+        ) {
+          res.status(404).json({ error: error.message });
+        } else {
+          res.status(500).json({ error: error.message });
+        }
+      } else {
+        res.status(500).json({ error: String(error) });
+      }
+    }
+  }
+
+  async removePermissionsFromRole(req: Request, res: Response): Promise<void> {
+    try {
+      const roleId = parseInt(req.params.roleId);
+      const { permissionIds } = req.body;
+
+      if (isNaN(roleId) || isNotNumeric(req.params.roleId)) {
+        res.status(400).json({ error: 'Invalid role ID' });
+        return;
+      }
+
+      if (!permissionIds || !Array.isArray(permissionIds) || permissionIds.length === 0) {
+        res.status(400).json({ error: 'Permission IDs array is required' });
+        return;
+      }
+
+      const updatedRole = await this.roleService.removePermissionsFromRole(roleId, permissionIds);
+
+      res.status(200).json(updatedRole);
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'Role not found') {
+          res.status(404).json({ error: error.message });
+        } else {
+          res.status(500).json({ error: error.message });
+        }
+      } else {
+        res.status(500).json({ error: String(error) });
+      }
+    }
+  }
+
+  async getRolePermissions(req: Request, res: Response): Promise<void> {
+    try {
+      const roleId = parseInt(req.params.roleId);
+
+      if (isNaN(roleId) || isNotNumeric(req.params.roleId)) {
+        res.status(400).json({ error: 'Invalid role ID' });
+        return;
+      }
+
+      const permissions = await this.roleService.getRolePermissions(roleId);
+
+      res.status(200).json(permissions);
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'Role not found') {
+          res.status(404).json({ error: error.message });
+        } else {
+          res.status(500).json({ error: error.message });
+        }
+      } else {
+        res.status(500).json({ error: String(error) });
+      }
+    }
+  }
+}
