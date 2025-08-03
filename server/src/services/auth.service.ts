@@ -22,8 +22,11 @@ export class AuthService {
     await this.userRepository.save(user);
   }
 
-  async login(username: string, password: string): Promise<string> {
-    const user = await this.userRepository.findOneBy({ username });
+  async login(username: string, password: string): Promise<{ id: number; username: string; token: string; groups: string[] }> {
+    const user = await this.userRepository.findOne({
+      where: { username },
+      relations: ['groups'],
+    });
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new Error('Invalid username or password');
@@ -33,6 +36,9 @@ export class AuthService {
       throw new Error('JWT_SECRET is not configured');
     }
 
-    return jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const groups = user.groups ? user.groups.map((g: any) => g.name) : [];
+
+    return { id: user.id, username: user.username, token, groups };
   }
 }
