@@ -1,11 +1,13 @@
 import { AppDataSource } from '../db/data-source';
 import { Role } from '../entities/role';
 import { Group } from '../entities/group';
+import { Permission } from '../entities/permission';
 import { In } from 'typeorm';
 
 export class RoleService {
   private roleRepository = AppDataSource.getRepository(Role);
   private groupRepository = AppDataSource.getRepository(Group);
+  private permissionRepository = AppDataSource.getRepository(Permission);
 
   async createRole(name: string, description?: string): Promise<Role> {
     const existingRole = await this.roleRepository.findOneBy({ name });
@@ -20,14 +22,14 @@ export class RoleService {
 
   async getAllRoles(): Promise<Role[]> {
     return this.roleRepository.find({
-      relations: ['groups'],
+      relations: ['groups', 'permissions', 'permissions.module'],
     });
   }
 
   async getRoleById(id: number): Promise<Role | null> {
     return this.roleRepository.findOne({
       where: { id },
-      relations: ['groups'],
+      relations: ['groups', 'permissions', 'permissions.module'],
     });
   }
 
@@ -56,23 +58,22 @@ export class RoleService {
   async deleteRole(id: number): Promise<void> {
     const role = await this.roleRepository.findOne({
       where: { id },
-      relations: ['groups'],
+      relations: ['groups', 'permissions'],
     });
 
     if (!role) {
       throw new Error('Role not found');
     }
 
-    // Remove role from all groups before deleting
-    if (role.groups && role.groups.length > 0) {
-      role.groups = [];
-      await this.roleRepository.save(role);
-    }
+    // Remove role from all groups and permissions before deleting
+    role.groups = [];
+    role.permissions = [];
+    await this.roleRepository.save(role);
 
     await this.roleRepository.remove(role);
   }
 
-  async assignRolesToGroup(roleId: number, groupIds: number[]): Promise<Role> {
+  async assignGroupsToRole(roleId: number, groupIds: number[]): Promise<Role> {
     const role = await this.roleRepository.findOne({
       where: { id: roleId },
       relations: ['groups'],
@@ -90,12 +91,12 @@ export class RoleService {
 
     const existingGroupIds = role.groups.map(group => group.id);
     const newGroups = groups.filter(group => !existingGroupIds.includes(group.id));
-    role.groups = [...role.groups, ...newGroups];
 
+    role.groups = [...role.groups, ...newGroups];
     return this.roleRepository.save(role);
   }
 
-  async removeRolesFromGroup(roleId: number, groupIds: number[]): Promise<Role> {
+  async removeGroupsFromRole(roleId: number, groupIds: number[]): Promise<Role> {
     const role = await this.roleRepository.findOne({
       where: { id: roleId },
       relations: ['groups'],
@@ -106,11 +107,10 @@ export class RoleService {
     }
 
     role.groups = role.groups.filter(group => !groupIds.includes(group.id));
-
     return this.roleRepository.save(role);
   }
 
-  async getGroupRoles(roleId: number): Promise<Group[]> {
+  async getRoleGroups(roleId: number): Promise<Group[]> {
     const role = await this.roleRepository.findOne({
       where: { id: roleId },
       relations: ['groups'],
@@ -121,5 +121,61 @@ export class RoleService {
     }
 
     return role.groups;
+  }
+
+  async assignPermissionsToRole(roleId: number, permissionIds: number[]): Promise<Role> {
+    const role = await this.roleRepository.findOne({
+      where: { id: roleId },
+      relations: ['permissions'],
+    });
+
+    if (!role) {
+      throw new Error('Role not found');
+    }
+
+    const permissions = await this.permissionRepository.findBy({ id: In(permissionIds) });
+
+    if (permissions.length !== permissionIds.length) {
+      throw new Error('One or more permissions not found');
+    }
+
+    const existingPermissionIds = role.permissions.map(permission => permission.id);
+    const newPermissions = permissions.filter(
+      permission => !existingPermissionIds.includes(permission.id)
+    );
+
+    role.permissions = [...role.permissions, ...newPermissions];
+
+    return this.roleRepository.save(role);
+  }
+
+  async removePermissionsFromRole(roleId: number, permissionIds: number[]): Promise<Role> {
+    const role = await this.roleRepository.findOne({
+      where: { id: roleId },
+      relations: ['permissions'],
+    });
+
+    if (!role) {
+      throw new Error('Role not found');
+    }
+
+    role.permissions = role.permissions.filter(
+      permission => !permissionIds.includes(permission.id)
+    );
+
+    return this.roleRepository.save(role);
+  }
+
+  async getRolePermissions(roleId: number): Promise<Permission[]> {
+    const role = await this.roleRepository.findOne({
+      where: { id: roleId },
+      relations: ['permissions', 'permissions.module'],
+    });
+
+    if (!role) {
+      throw new Error('Role not found');
+    }
+
+    return role.permissions;
   }
 }
