@@ -10,7 +10,11 @@ export class RoleController {
       const { name, description } = req.body;
 
       if (!name || hasLeadingOrTrailingWhitespace(name)) {
-        res.status(400).json({ error: 'Role name must not start or end with whitespace' });
+        res.status(400).json({
+          error: hasLeadingOrTrailingWhitespace(name)
+            ? 'Role name must not start or end with whitespace'
+            : 'Role name is required',
+        });
         return;
       }
 
@@ -80,7 +84,11 @@ export class RoleController {
       }
 
       if (!name || hasLeadingOrTrailingWhitespace(name)) {
-        res.status(400).json({ error: 'Role name must not start or end with whitespace' });
+        res.status(400).json({
+          error: hasLeadingOrTrailingWhitespace(name)
+            ? 'Role name must not start or end with whitespace'
+            : 'Role name is required',
+        });
         return;
       }
 
@@ -127,7 +135,7 @@ export class RoleController {
     }
   }
 
-  async assignRolesToGroup(req: Request, res: Response): Promise<void> {
+  async assignGroupsToRole(req: Request, res: Response): Promise<void> {
     try {
       const roleId = parseInt(req.params.roleId);
       const { groupIds } = req.body;
@@ -148,7 +156,7 @@ export class RoleController {
         return;
       }
 
-      const updatedRole = await this.roleService.assignRolesToGroup(roleId, groupIds);
+      const updatedRole = await this.roleService.assignGroupsToRole(roleId, groupIds);
 
       res.status(200).json(updatedRole);
     } catch (error) {
@@ -167,7 +175,7 @@ export class RoleController {
     }
   }
 
-  async removeRolesFromGroup(req: Request, res: Response): Promise<void> {
+  async removeGroupsFromRole(req: Request, res: Response): Promise<void> {
     try {
       const roleId = parseInt(req.params.roleId);
       const { groupIds } = req.body;
@@ -182,7 +190,7 @@ export class RoleController {
         return;
       }
 
-      const updatedRole = await this.roleService.removeRolesFromGroup(roleId, groupIds);
+      const updatedRole = await this.roleService.removeGroupsFromRole(roleId, groupIds);
 
       res.status(200).json(updatedRole);
     } catch (error) {
@@ -198,7 +206,7 @@ export class RoleController {
     }
   }
 
-  async getGroupRoles(req: Request, res: Response): Promise<void> {
+  async getRoleGroups(req: Request, res: Response): Promise<void> {
     try {
       const roleId = parseInt(req.params.roleId);
 
@@ -207,9 +215,105 @@ export class RoleController {
         return;
       }
 
-      const groups = await this.roleService.getGroupRoles(roleId);
+      const groups = await this.roleService.getRoleGroups(roleId);
 
       res.status(200).json(groups);
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'Role not found') {
+          res.status(404).json({ error: error.message });
+        } else {
+          res.status(500).json({ error: error.message });
+        }
+      } else {
+        res.status(500).json({ error: String(error) });
+      }
+    }
+  }
+
+  async assignPermissionsToRole(req: Request, res: Response): Promise<void> {
+    try {
+      const roleId = parseInt(req.params.roleId);
+      const { permissionIds } = req.body;
+
+      if (isNaN(roleId) || isNotNumeric(req.params.roleId)) {
+        res.status(400).json({ error: 'Invalid role ID' });
+        return;
+      }
+
+      if (!permissionIds || !Array.isArray(permissionIds) || permissionIds.length === 0) {
+        res.status(400).json({ error: 'Permission IDs array is required' });
+        return;
+      }
+
+      const invalidIds = permissionIds.filter(id => !Number.isInteger(id) || id <= 0);
+      if (invalidIds.length > 0) {
+        res.status(400).json({ error: 'All permission IDs must be positive integers' });
+        return;
+      }
+
+      const updatedRole = await this.roleService.assignPermissionsToRole(roleId, permissionIds);
+
+      res.status(200).json(updatedRole);
+    } catch (error) {
+      if (error instanceof Error) {
+        if (
+          error.message === 'Role not found' ||
+          error.message === 'One or more permissions not found'
+        ) {
+          res.status(404).json({ error: error.message });
+        } else {
+          res.status(500).json({ error: error.message });
+        }
+      } else {
+        res.status(500).json({ error: String(error) });
+      }
+    }
+  }
+
+  async removePermissionsFromRole(req: Request, res: Response): Promise<void> {
+    try {
+      const roleId = parseInt(req.params.roleId);
+      const { permissionIds } = req.body;
+
+      if (isNaN(roleId) || isNotNumeric(req.params.roleId)) {
+        res.status(400).json({ error: 'Invalid role ID' });
+        return;
+      }
+
+      if (!permissionIds || !Array.isArray(permissionIds) || permissionIds.length === 0) {
+        res.status(400).json({ error: 'Permission IDs array is required' });
+        return;
+      }
+
+      const updatedRole = await this.roleService.removePermissionsFromRole(roleId, permissionIds);
+
+      res.status(200).json(updatedRole);
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'Role not found') {
+          res.status(404).json({ error: error.message });
+        } else {
+          res.status(500).json({ error: error.message });
+        }
+      } else {
+        res.status(500).json({ error: String(error) });
+      }
+    }
+  }
+
+  async getRolePermissions(req: Request, res: Response): Promise<void> {
+    try {
+      const roleId = parseInt(req.params.roleId);
+
+      if (isNaN(roleId) || isNotNumeric(req.params.roleId)) {
+        res.status(400).json({ error: 'Invalid role ID' });
+        return;
+      }
+
+      const permissions = await this.roleService.getRolePermissions(roleId);
+
+      res.status(200).json(permissions);
     } catch (error) {
       if (error instanceof Error) {
         if (error.message === 'Role not found') {

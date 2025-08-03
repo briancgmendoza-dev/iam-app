@@ -10,7 +10,11 @@ export class GroupController {
       const { name, description } = req.body;
 
       if (!name || hasLeadingOrTrailingWhitespace(name)) {
-        res.status(400).json({ error: 'Group name must not start or end with whitespace' });
+        res.status(400).json({
+          error: hasLeadingOrTrailingWhitespace(name)
+            ? 'Group name must not start or end with whitespace'
+            : 'Group name is required',
+        });
         return;
       }
 
@@ -81,7 +85,13 @@ export class GroupController {
       }
 
       if (!name || hasLeadingOrTrailingWhitespace(name)) {
-        res.status(400).json({ error: 'Group name must not start or end with whitespace' });
+        res
+          .status(400)
+          .json({
+            error: hasLeadingOrTrailingWhitespace(name)
+              ? 'Group name must not start or end with whitespace'
+              : 'Group name is required',
+          });
         return;
       }
 
