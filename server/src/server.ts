@@ -11,6 +11,7 @@ import roleRoutes from './routes/role.routes';
 import moduleRoutes from './routes/module.routes';
 import permissionRoutes from './routes/permission.routes';
 import accessControlRoutes from './routes/access-control.routes';
+import { seedDatabase } from './db/seed';
 
 dotenv.config();
 const app = express();
@@ -20,8 +21,10 @@ app.use(express.json());
 app.use(passport.initialize());
 
 AppDataSource.initialize()
-  .then(() => {
+  .then(async () => {
     console.log('Database connected successfully');
+
+    await seedDatabase();
 
     app.use('/', authRoutes);
     app.use('/users', userRoutes);
