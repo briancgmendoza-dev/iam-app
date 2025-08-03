@@ -8,6 +8,9 @@ import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import groupRoutes from './routes/group.routes';
 import roleRoutes from './routes/role.routes';
+import moduleRoutes from './routes/module.routes';
+import permissionRoutes from './routes/permission.routes';
+import accessControlRoutes from './routes/access-control.routes';
 
 dotenv.config();
 const app = express();
@@ -24,6 +27,9 @@ AppDataSource.initialize()
     app.use('/users', userRoutes);
     app.use('/groups', groupRoutes);
     app.use('/roles', roleRoutes);
+    app.use('/modules', moduleRoutes);
+    app.use('/permissions', permissionRoutes);
+    app.use('/', accessControlRoutes);
 
     const PORT = process.env.PORT || 8080;
     app.listen(PORT, () => {
