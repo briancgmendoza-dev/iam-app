@@ -179,34 +179,44 @@ Authorization: Bearer <your_jwt_token>
 ## 🎨 Frontend Screenshots
 
 ### Login Page
-![Login Page](screenshots/login.png)
+![Login Page](<img width="1870" height="988" alt="image" src="https://github.com/user-attachments/assets/7bb73da2-e780-426d-8249-b17f3e10b565" />
+)
 *User authentication interface with modern design*
 
+### Register Page
+![Register Page](<img width="1869" height="985" alt="image" src="https://github.com/user-attachments/assets/41e83e2d-f997-4592-93d3-565d44e7e0d5" />
+)
+*Registration*
+
 ### Dashboard
-![Dashboard](screenshots/dashboard.png)
+![Dashboard](<img width="1871" height="990" alt="image" src="https://github.com/user-attachments/assets/58581e27-14d8-41bd-839d-182c3cdefea3" />
+)
 *Main dashboard showing user permissions and action simulation*
 
 ### User Management
-![User Management](screenshots/users.png)
+![User Management](<img width="1868" height="991" alt="image" src="https://github.com/user-attachments/assets/1f5a8830-e21a-486e-a4f9-f28becb0aa8d" />
+)
 *User list and management interface*
 
 ### Role Management
-![Role Management](screenshots/roles.png)
+![Role Management](<img width="1869" height="993" alt="image" src="https://github.com/user-attachments/assets/e855a645-cab3-449a-bcb4-5bc51fc9cd85" />
+)
 *Role creation and management interface*
 
 ### Group Management
-![Group Management](screenshots/groups.png)
+![Group Management](<img width="1868" height="991" alt="image" src="https://github.com/user-attachments/assets/f426e2ae-2d3e-4db6-bac2-41a46186b01f" />
+)
 *Group management interface*
 
 ### Module Management
-![Module Management](screenshots/modules.png)
+![Module Management](<img width="1871" height="988" alt="image" src="https://github.com/user-attachments/assets/d53b547b-dab3-46b4-bc7e-9eba00d23a3f" />
+)
 *Application module management*
 
 ### Permission Management
-![Permission Management](screenshots/permissions.png)
+![Permission Management](<img width="1861" height="989" alt="image" src="https://github.com/user-attachments/assets/d08a7f7e-b4c2-4422-898e-b0277244fb18" />
+)
 *Permission assignment and management*
-
-> **Note**: Add your screenshots to a `screenshots/` directory in the project root and update the paths above accordingly.
 
 ## 📁 Project Structure
 
