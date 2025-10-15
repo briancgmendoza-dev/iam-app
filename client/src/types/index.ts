@@ -64,9 +64,9 @@ export interface ApiResponse<T> {
 }
 
 export interface UserPermission {
-  module: string;
+  module: string | Module;
   action: string;
-  allowed: boolean;
+  allowed?: boolean;
 }
 
 export interface SimulateActionRequest {

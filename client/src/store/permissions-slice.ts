@@ -81,13 +81,34 @@ export const fetchUserPermissions = createAsyncThunk(
 
 export const simulateAction = createAsyncThunk(
   'permissions/simulateAction',
-  async (actionData: SimulateActionRequest, { rejectWithValue }) => {
+  async (actionData: SimulateActionRequest, { rejectWithValue, getState }) => {
     try {
-      const response = await apiService.post<ApiResponse<{ allowed: boolean }>>(
+      const state = getState() as any;
+      const userIdString = state.auth.user?.id;
+
+      if (!userIdString) {
+        return rejectWithValue('User not authenticated');
+      }
+
+      // Convert string ID to number for backend
+      const userId = parseInt(userIdString, 10);
+
+      if (isNaN(userId)) {
+        return rejectWithValue('Invalid user ID');
+      }
+
+      const response = await apiService.post<ApiResponse<any>>(
         '/simulate-action',
-        actionData
+        { ...actionData, userId }
       );
-      return { ...actionData, allowed: response.data.allowed };
+      const resultData = response.data || response;
+      return {
+        ...actionData,
+        allowed: resultData.allowed,
+        user: resultData.user,
+        requiredPermission: resultData.requiredPermission,
+        userPermissions: resultData.userPermissions
+      };
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to simulate action');
     }
@@ -127,7 +148,7 @@ const permissionsSlice = createSlice({
       })
       .addCase(fetchPermissions.fulfilled, (state, action) => {
         state.loading = false;
-        state.permissions = action.payload;
+        state.permissions = action.payload.data || action.payload;
       })
       .addCase(fetchPermissions.rejected, (state, action) => {
         state.loading = false;
@@ -150,7 +171,7 @@ const permissionsSlice = createSlice({
         );
       })
       .addCase(fetchUserPermissions.fulfilled, (state, action) => {
-        state.userPermissions = action.payload;
+        state.userPermissions = action.payload.data || action.payload;
       });
   },
 });

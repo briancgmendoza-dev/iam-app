@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from '../store';
 import { fetchUserPermissions, simulateAction } from '../store/permissions-slice';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import OPATestingComponent from '../components/common/OPATestingComponent';
 
 const Dashboard: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -30,9 +31,17 @@ const Dashboard: React.FC = () => {
 
   const handleSimulationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await dispatch(simulateAction(simulationForm));
-    if (result.type === 'permissions/simulateAction/fulfilled') {
-      setSimulationResult({ allowed: (result.payload as any).allowed });
+    try {
+      const result = await dispatch(simulateAction(simulationForm));
+      if (result.type === 'permissions/simulateAction/fulfilled') {
+        setSimulationResult({ allowed: (result.payload as any).allowed });
+      } else {
+        console.error('Permission simulation failed:', result.payload);
+        setSimulationResult({ allowed: false });
+      }
+    } catch (error) {
+      console.error('Error in simulation:', error);
+      setSimulationResult({ allowed: false });
     }
   };
 
@@ -102,21 +111,27 @@ const Dashboard: React.FC = () => {
 
           {userPermissions.length > 0 ? (
             <div className="space-y-3 max-h-64 overflow-y-auto">
-              {userPermissions.map((permission, index) => (
-                <div
-                  key={permission.id}
-                  className="p-4 rounded-xl border backdrop-blur-sm bg-blue-500/20 border-blue-400/30"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-white">
-                      {permission.action} on {permission.module.name}
-                    </span>
-                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-400/20 text-blue-300 border border-blue-400/30">
-                      Available
-                    </span>
+              {userPermissions.map((permission, index) => {
+                const moduleName = typeof permission.module === 'string'
+                  ? permission.module
+                  : permission.module?.name || 'Unknown Module';
+
+                return (
+                  <div
+                    key={`${moduleName}-${permission.action}-${index}`}
+                    className="p-4 rounded-xl border backdrop-blur-sm bg-blue-500/20 border-blue-400/30"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-white">
+                        {permission.action} on {moduleName}
+                      </span>
+                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-400/20 text-blue-300 border border-blue-400/30">
+                        Available
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-8">
@@ -255,6 +270,11 @@ const Dashboard: React.FC = () => {
             </div>
           )}
         </div>
+      </div>
+
+      {/* OPA Testing Section */}
+      <div className="mt-6">
+        <OPATestingComponent />
       </div>
     </div>
   );

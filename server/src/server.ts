@@ -11,6 +11,7 @@ import roleRoutes from './routes/role.routes';
 import moduleRoutes from './routes/module.routes';
 import permissionRoutes from './routes/permission.routes';
 import accessControlRoutes from './routes/access-control.routes';
+import opaRoutes from './routes/opa.routes';
 import { seedDatabase } from './db/seed';
 
 dotenv.config();
@@ -33,6 +34,7 @@ AppDataSource.initialize()
     app.use('/modules', moduleRoutes);
     app.use('/permissions', permissionRoutes);
     app.use('/', accessControlRoutes);
+    app.use('/opa', opaRoutes);
 
     const PORT = process.env.PORT || 8080;
     app.listen(PORT, () => {

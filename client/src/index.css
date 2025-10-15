@@ -1,1 +1,16 @@
 @import 'tailwindcss';
+
+/* Custom select dropdown styling for better visibility */
+select option {
+  background-color: #1f2937 !important;
+  color: #ffffff !important;
+  padding: 8px 12px;
+}
+
+select option:hover {
+  background-color: #374151 !important;
+}
+
+select option:checked {
+  background-color: #3b82f6 !important;
+}

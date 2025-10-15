@@ -1,22 +1,17 @@
 import express from 'express';
 import { UserController } from '../controllers/user.controller';
 import { jwtAuth } from '../middleware/auth';
-import { checkPermission } from '../middleware/check-permission';
+import { opaCheckPermission } from '../middleware/opa-check-permission';
 
 const router = express.Router();
 const userController = new UserController();
 
 router.use(jwtAuth);
-// Read
-router.get('/', (req, res) => userController.getUsers(req, res));
-router.get('/:id', (req, res) => userController.getUserById(req, res));
 
-// Write
-router.put('/:id', checkPermission('user', 'update'), (req, res) =>
-  userController.updateUser(req, res)
-);
-router.delete('/:id', checkPermission('user', 'delete'), (req, res) =>
-  userController.deleteUser(req, res)
-);
+// Apply OPA-based permission checks
+router.get('/', opaCheckPermission('Users', 'read'), (req, res) => userController.getUsers(req, res));
+router.get('/:id', opaCheckPermission('Users', 'read'), (req, res) => userController.getUserById(req, res));
+router.put('/:id', opaCheckPermission('Users', 'update'), (req, res) => userController.updateUser(req, res));
+router.delete('/:id', opaCheckPermission('Users', 'delete'), (req, res) => userController.deleteUser(req, res));
 
 export default router;
