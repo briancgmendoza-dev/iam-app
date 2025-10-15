@@ -11,7 +11,9 @@ import roleRoutes from './routes/role.routes';
 import moduleRoutes from './routes/module.routes';
 import permissionRoutes from './routes/permission.routes';
 import accessControlRoutes from './routes/access-control.routes';
+import policyRoutes from './routes/policy.routes';
 import { seedDatabase } from './db/seed';
+import { opaService } from './services/opa.service';
 
 dotenv.config();
 const app = express();
@@ -24,6 +26,15 @@ AppDataSource.initialize()
   .then(async () => {
     console.log('Database connected successfully');
 
+    // Initialize OPA service
+    try {
+      await opaService.initialize();
+      console.log('🔒 OPA Service initialized');
+    } catch (error) {
+      console.error('❌ Failed to initialize OPA Service:', error);
+      console.warn('⚠️ Continuing without OPA - using fallback authorization');
+    }
+
     await seedDatabase();
 
     app.use('/', authRoutes);
@@ -32,11 +43,13 @@ AppDataSource.initialize()
     app.use('/roles', roleRoutes);
     app.use('/modules', moduleRoutes);
     app.use('/permissions', permissionRoutes);
+    app.use('/policies', policyRoutes);
     app.use('/', accessControlRoutes);
 
     const PORT = process.env.PORT || 8080;
     app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
+      console.log(`🚀 Server is running on port ${PORT}`);
+      console.log(`📚 API Documentation available at http://localhost:${PORT}/api-docs`);
     });
   })
   .catch(error => {
