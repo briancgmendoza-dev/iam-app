@@ -36,7 +36,7 @@ export class AccessControlController {
     try {
       const { userId, module, action } = req.body;
 
-      if (isNotNumeric(userId)) {
+      if (!userId) {
         res.status(400).json({ error: 'Invalid user ID' });
         return;
       }
