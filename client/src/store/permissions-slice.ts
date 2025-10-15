@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import type { Permission, UserPermission, ApiResponse, SimulateActionRequest } from '../types';
+import type { Permission, UserPermission, ApiResponse, SimulateActionRequest, SimulateActionResponse } from '../types';
 import { apiService } from '../services/api';
 
 interface PermissionsState {
@@ -84,30 +84,28 @@ export const simulateAction = createAsyncThunk(
   async (actionData: SimulateActionRequest, { rejectWithValue, getState }) => {
     try {
       const state = getState() as any;
-      const userIdString = state.auth.user?.id;
+      const userId = +state.auth.user?.id;
 
-      if (!userIdString) {
+      if (!userId) {
         return rejectWithValue('User not authenticated');
       }
 
-      // Convert string ID to number for backend
-      const userId = parseInt(userIdString, 10);
 
       if (isNaN(userId)) {
         return rejectWithValue('Invalid user ID');
       }
 
-      const response = await apiService.post<ApiResponse<any>>(
+      const response = await apiService.post<SimulateActionResponse>(
         '/simulate-action',
         { ...actionData, userId }
       );
-      const resultData = response.data || response;
+
       return {
         ...actionData,
-        allowed: resultData.allowed,
-        user: resultData.user,
-        requiredPermission: resultData.requiredPermission,
-        userPermissions: resultData.userPermissions
+        allowed: response.allowed,
+        requiredPermission: response.requiredPermission,
+        user: response.user,
+        userPermissions: response.userPermissions
       };
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to simulate action');

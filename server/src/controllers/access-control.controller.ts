@@ -36,8 +36,8 @@ export class AccessControlController {
     try {
       const { userId, module, action } = req.body;
 
-      if (typeof userId !== 'number' || isNaN(userId)) {
-        res.status(400).json({ error: 'User ID must be a valid number' });
+      if (!userId) {
+        res.status(400).json({ error: 'Invalid user ID' });
         return;
       }
 

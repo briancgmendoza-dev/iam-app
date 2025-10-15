@@ -73,3 +73,21 @@ export interface SimulateActionRequest {
   module: string;
   action: string;
 }
+
+export interface SimulateActionResponse {
+  allowed: boolean;
+  requiredPermission?: string;
+  user?: {
+    id: number;
+    username: string;
+    password: string;
+  };
+  userPermissions?: Array<{
+    id: number;
+    action: string;
+    module: {
+      id: number;
+      name: string;
+    };
+  }>;
+}
