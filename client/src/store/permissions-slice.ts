@@ -1,10 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import type { Permission, UserPermission, ApiResponse, SimulateActionRequest, SimulateActionResponse } from '../types';
+import type { Permission, ApiResponse } from '../types';
 import { apiService } from '../services/api';
 
 interface PermissionsState {
   permissions: Permission[];
-  userPermissions: UserPermission[];
+  userPermissions: Permission[];
   loading: boolean;
   error: string | null;
 }
@@ -21,7 +21,7 @@ export const fetchPermissions = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await apiService.get<ApiResponse<Permission[]>>('permissions');
-      return response;
+      return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch permissions');
     }
@@ -71,7 +71,7 @@ export const fetchUserPermissions = createAsyncThunk(
   'permissions/fetchUserPermissions',
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await apiService.post<ApiResponse<UserPermission[]>>(`/${id}/permissions`);
+      const response = await apiService.post<Permission[]>(`/${id}/permissions`);
       return response;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch user permissions');
@@ -79,39 +79,7 @@ export const fetchUserPermissions = createAsyncThunk(
   }
 );
 
-export const simulateAction = createAsyncThunk(
-  'permissions/simulateAction',
-  async (actionData: SimulateActionRequest, { rejectWithValue, getState }) => {
-    try {
-      const state = getState() as any;
-      const userId = +state.auth.user?.id;
-
-      if (!userId) {
-        return rejectWithValue('User not authenticated');
-      }
-
-
-      if (isNaN(userId)) {
-        return rejectWithValue('Invalid user ID');
-      }
-
-      const response = await apiService.post<SimulateActionResponse>(
-        '/simulate-action',
-        { ...actionData, userId }
-      );
-
-      return {
-        ...actionData,
-        allowed: response.allowed,
-        requiredPermission: response.requiredPermission,
-        user: response.user,
-        userPermissions: response.userPermissions
-      };
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to simulate action');
-    }
-  }
-);
+// Note: simulateAction moved to policies-slice.ts for better organization
 
 export const assignPermissionToRole = createAsyncThunk(
   'permissions/assignPermissionToRole',

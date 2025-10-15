@@ -5,6 +5,7 @@ import groupsReducer from './groups-slice';
 import rolesReducer from './roles-slice';
 import modulesReducer from './modules-slice';
 import permissionsReducer from './permissions-slice';
+import policiesReducer from './policies-slice';
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     roles: rolesReducer,
     modules: modulesReducer,
     permissions: permissionsReducer,
+    policies: policiesReducer,
   },
 });
 

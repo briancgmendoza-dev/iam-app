@@ -90,4 +90,65 @@ export interface SimulateActionResponse {
       name: string;
     };
   }>;
+  opaDetails?: {
+    violations?: string[];
+    denyReasons?: Array<{
+      code: string;
+      message: string;
+      required: { module: string; action: string };
+      user_permissions: any[];
+    }>;
+  };
+}
+
+// OPA-specific types for the policies slice
+export interface OpaMetrics {
+  totalEvaluations: number;
+  cacheHits: number;
+  cacheMisses: number;
+  errors: number;
+  averageEvaluationTime: number;
+  cacheHitRate: number;
+  errorRate: number;
+}
+
+export interface OpaStatus {
+  initialized: boolean;
+  timestamp: string;
+  version: string;
+  performance?: OpaMetrics;
+  health?: {
+    status: 'healthy' | 'degraded' | 'unhealthy';
+    checks: Array<{
+      name: string;
+      status: 'pass' | 'fail';
+      message?: string;
+    }>;
+  };
+}
+
+export interface BatchEvaluationRequest {
+  requests: Array<{
+    module: string;
+    action: string;
+    resourceId?: number;
+  }>;
+}
+
+export interface BatchEvaluationResult {
+  results: Array<{
+    module: string;
+    action: string;
+    resourceId?: number;
+    allowed: boolean;
+    cached?: boolean;
+    evaluationTime?: number;
+  }>;
+  summary: {
+    total: number;
+    allowed: number;
+    denied: number;
+    cached: number;
+    totalTime: number;
+  };
 }

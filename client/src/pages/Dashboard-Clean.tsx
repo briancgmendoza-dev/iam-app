@@ -1,8 +1,8 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from '../store';
 import { fetchUserPermissions } from '../store/permissions-slice';
-import { fetchOpaStatus, batchEvaluateActions, clearError } from '../store/policies-slice';
+import { usePolicies, usePolicyTests } from '../hooks/use-policies';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import OpaStatusCard from '../components/common/OpaStatusCard';
 import PolicySimulationForm from '../components/common/PolicySimulationForm';
@@ -11,7 +11,8 @@ const Dashboard: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
   const { userPermissions = [], loading: permissionsLoading } = useSelector((state: RootState) => state.permissions);
-  const { error: policiesError } = useSelector((state: RootState) => state.policies);
+  const { refreshStatus, error: policiesError } = usePolicies();
+  const { runCommonTests } = usePolicyTests();
 
   // Auto-refresh OPA status and fetch user permissions
   useEffect(() => {
@@ -19,39 +20,15 @@ const Dashboard: React.FC = () => {
 
     // Initial data fetch
     dispatch(fetchUserPermissions(user.id));
-    dispatch(fetchOpaStatus(false));
+    refreshStatus(false);
 
     // Set up auto-refresh for OPA status every 30 seconds
     const interval = setInterval(() => {
-      dispatch(fetchOpaStatus(false)); // Use cached data if available
+      refreshStatus(false); // Use cached data if available
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [dispatch, user]);
-
-  // Clear errors after 5 seconds
-  useEffect(() => {
-    if (policiesError) {
-      const timer = setTimeout(() => {
-        dispatch(clearError());
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [policiesError, dispatch]);
-
-  // Batch test common actions
-  const runCommonTests = useCallback(async () => {
-    const commonActions = [
-      { module: 'Users', action: 'read' },
-      { module: 'Users', action: 'create' },
-      { module: 'Users', action: 'update' },
-      { module: 'Groups', action: 'read' },
-      { module: 'Roles', action: 'read' },
-      { module: 'Permissions', action: 'read' },
-    ];
-
-    return dispatch(batchEvaluateActions({ requests: commonActions }));
-  }, [dispatch]);
+  }, [dispatch, user, refreshStatus]);
 
   const isAdmin = user?.username === 'admin';
 
