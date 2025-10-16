@@ -6,7 +6,7 @@ import { User } from '../entities/user';
 export class AuthService {
   private userRepository = AppDataSource.getRepository(User);
 
-  async register(username: string, password: string): Promise<void> {
+  async register(username: string, password: string, salary: string): Promise<void> {
     const existingUser = await this.userRepository.findOneBy({ username });
 
     if (existingUser) {
@@ -17,6 +17,7 @@ export class AuthService {
     const user = this.userRepository.create({
       username,
       password: hashedPassword,
+      salary
     });
 
     await this.userRepository.save(user);

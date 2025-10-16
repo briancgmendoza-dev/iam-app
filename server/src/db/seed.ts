@@ -70,6 +70,7 @@ export async function seedDatabase() {
     const adminUser = await userRepo.save({
       username: 'admin',
       password: hashedPassword,
+      salary: '$100000',
       groups: [adminGroup],
     });
     console.log('Created default admin user');

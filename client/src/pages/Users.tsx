@@ -5,8 +5,10 @@ import { fetchUsers, updateUser, deleteUser } from '../store/users-slice';
 import { register } from '../store/auth-slice';
 import type { User } from '../types';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import { useNavigate } from 'react-router-dom';
 
 const Users: React.FC = () => {
+  const navigate = useNavigate()
   const dispatch = useDispatch<AppDispatch>();
   const { users = [], loading, error } = useSelector((state: RootState) => state.users);
 
@@ -52,6 +54,10 @@ const Users: React.FC = () => {
       password: '',
     });
     setShowForm(true);
+  };
+
+  const handleShowDetails = (id: number) => {
+    navigate(`/users/${id}`);
   };
 
   const handleDelete = async (id: number) => {
@@ -168,6 +174,12 @@ const Users: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => handleShowDetails(user.id)}
+                    className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                  >
+                    Details
+                  </button>
                   <button
                     onClick={() => handleEdit(user)}
                     className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"

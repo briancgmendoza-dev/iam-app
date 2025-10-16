@@ -31,6 +31,12 @@ allow if {
     self_service_allowed
 }
 
+deny if {
+  intput.user.is_admin == false
+  // if the user is in the group we have create
+  
+}
+
 # ==============================================================================
 # HELPER RULES
 # ==============================================================================

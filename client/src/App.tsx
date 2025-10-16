@@ -16,6 +16,7 @@ import Groups from './pages/Groups';
 import Roles from './pages/Roles';
 import Modules from './pages/Modules';
 import Permissions from './pages/Permissions';
+import UserDetails from './pages/UserDetails'
 
 function App() {
   // const dispatch = useDispatch<AppDispatch>();
@@ -50,6 +51,7 @@ function App() {
             <Route path="roles" element={<Roles />} />
             <Route path="modules" element={<Modules />} />
             <Route path="permissions" element={<Permissions />} />
+            <Route path="users/:id" element={<UserDetails />} />
           </Route>
         </Routes>
       </div>

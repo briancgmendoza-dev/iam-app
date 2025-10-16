@@ -7,7 +7,7 @@ export class AuthController {
 
   async register(req: Request, res: Response): Promise<void> {
     try {
-      const { username, password } = req.body;
+      const { username, password, salary } = req.body;
 
       const cleanedUsername = cleanStringInput(username);
       const cleanedPassword = cleanStringInput(password);
@@ -17,7 +17,7 @@ export class AuthController {
         return;
       }
 
-      await this.authService.register(cleanedUsername, cleanedPassword);
+      await this.authService.register(cleanedUsername, cleanedPassword, salary);
 
       res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {

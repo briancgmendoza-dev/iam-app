@@ -3,6 +3,7 @@ export interface User {
   username: string;
   groups: Group[];
   token: string;
+  salary: string;
 }
 
 export interface Group {

@@ -12,6 +12,9 @@ export class User {
   @Column()
   password!: string;
 
+  @Column()
+  salary!: string;
+
   @ManyToMany(() => Group, group => group.users)
   groups!: Group[];
 }
