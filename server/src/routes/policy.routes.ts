@@ -15,9 +15,7 @@ router.use(jwtAuth);
 // Policy management routes - require authentication
 router.get('/status', (req, res) => policyController.getStatus(req, res));
 
-router.get('/metrics', opaCheckPermission('policies', 'read'), (req, res) =>
-  policyController.getMetrics(req, res)
-);
+
 
 router.post('/test', opaCheckPermission('policies', 'create'), (req, res) =>
   policyController.testPolicy(req, res)

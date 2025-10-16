@@ -46,14 +46,7 @@ interface CacheEntry {
   ttl: number;
 }
 
-interface OpaMetrics {
-  totalEvaluations: number;
-  cacheHits: number;
-  cacheMisses: number;
-  errors: number;
-  averageEvaluationTime: number;
-  lastError?: string;
-}
+
 
 export class OpaService {
   private opa: any | null = null;
@@ -65,14 +58,7 @@ export class OpaService {
   private readonly cacheSize = 5000; // Reduced for better memory usage
   private readonly defaultCacheTtl = 300000; // 5 minutes
 
-  // Metrics
-  private metrics: OpaMetrics = {
-    totalEvaluations: 0,
-    cacheHits: 0,
-    cacheMisses: 0,
-    errors: 0,
-    averageEvaluationTime: 0,
-  };
+
 
   // Rate limiting
   private readonly rateLimitMap = new Map<string, { count: number; resetTime: number }>();
@@ -142,8 +128,10 @@ export class OpaService {
       // Initialize cache cleanup interval
       this.startCacheCleanup();
 
-      // Initialize metrics collection
-      this.startMetricsCollection();
+      // Initialize periodic tasks
+      this.startPeriodicTasks();
+
+
 
       this.initialized = true;
       console.log('🔒 OPA Service initialized successfully');
@@ -182,20 +170,14 @@ export class OpaService {
       const cached = this.getFromCache(cacheKey);
 
       if (cached) {
-        this.metrics.cacheHits++;
         return cached.allow;
       }
-
-      this.metrics.cacheMisses++;
 
       // Evaluate with real OPA
       const result = await this.evaluateWithOpa(input);
 
       // Cache the result
       this.setCache(cacheKey, result);
-
-      // Update metrics
-      this.updateMetrics(startTime);
 
       // Audit logging for denied access
       if (!result.allow) {
@@ -205,9 +187,6 @@ export class OpaService {
       return result.allow;
 
     } catch (error) {
-      this.metrics.errors++;
-      this.metrics.lastError = error instanceof Error ? error.message : String(error);
-
       console.error('❌ OPA evaluation error:', error);
       this.auditLog('EVALUATION_ERROR', input, null, error);
 
@@ -250,12 +229,7 @@ export class OpaService {
     return this.initialized;
   }
 
-  /**
-   * Get service metrics for monitoring
-   */
-  getMetrics(): OpaMetrics {
-    return { ...this.metrics };
-  }
+
 
   /**
    * Clear cache - useful for policy updates
@@ -501,19 +475,7 @@ export class OpaService {
     };
   }
 
-  /**
-   * Update performance metrics with exponential moving average
-   */
-  private updateMetrics(startTime: number): void {
-    this.metrics.totalEvaluations++;
-    const evaluationTime = Date.now() - startTime;
 
-    // Use exponential moving average for better performance
-    const alpha = 0.1; // Smoothing factor
-    this.metrics.averageEvaluationTime = this.metrics.averageEvaluationTime === 0
-      ? evaluationTime
-      : this.metrics.averageEvaluationTime * (1 - alpha) + evaluationTime * alpha;
-  }
 
   /**
    * Audit logging for security events
@@ -568,20 +530,13 @@ export class OpaService {
   }
 
   /**
-   * Start metrics collection
+   * Start periodic cleanup tasks
    */
-  private startMetricsCollection(): void {
+  private startPeriodicTasks(): void {
     // Reset rate limits periodically
     setInterval(() => {
       this.rateLimitMap.clear();
     }, this.rateLimitWindow);
-
-    // Log metrics periodically in production
-    if (process.env.NODE_ENV === 'production') {
-      setInterval(() => {
-        console.log('📊 OPA Metrics:', this.getMetrics());
-      }, 300000); // Every 5 minutes
-    }
   }
 }
 

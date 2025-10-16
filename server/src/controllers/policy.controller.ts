@@ -35,8 +35,6 @@ export class PolicyController {
    */
   async getStatus(req: Request, res: Response): Promise<void> {
     try {
-      const metrics = opaService.getMetrics();
-
       const status = {
         service: {
           initialized: opaService.isInitialized(),
@@ -45,19 +43,8 @@ export class PolicyController {
           uptime: process.uptime(),
           timestamp: new Date().toISOString()
         },
-        performance: {
-          totalEvaluations: metrics.totalEvaluations,
-          averageEvaluationTime: Math.round(metrics.averageEvaluationTime * 100) / 100,
-          cacheHitRate: metrics.totalEvaluations > 0
-            ? Math.round((metrics.cacheHits / (metrics.cacheHits + metrics.cacheMisses)) * 100) / 100
-            : 0,
-          errorRate: metrics.totalEvaluations > 0
-            ? Math.round((metrics.errors / metrics.totalEvaluations) * 100) / 100
-            : 0
-        },
         health: {
           status: opaService.isInitialized() ? 'healthy' : 'unhealthy',
-          lastError: metrics.lastError || null,
           checks: {
             initialization: opaService.isInitialized(),
             memoryUsage: process.memoryUsage(),
@@ -241,31 +228,5 @@ export class PolicyController {
     }
   }
 
-  /**
-   * Get detailed metrics for monitoring dashboard
-   */
-  async getMetrics(req: Request, res: Response): Promise<void> {
-    try {
-      const metrics = opaService.getMetrics();
 
-      res.status(200).json({
-        metrics,
-        system: {
-          memory: process.memoryUsage(),
-          cpu: process.cpuUsage(),
-          uptime: process.uptime(),
-          nodeVersion: process.version,
-          platform: process.platform
-        },
-        timestamp: new Date().toISOString()
-      });
-
-    } catch (error) {
-      res.status(500).json({
-        error: 'Failed to get metrics',
-        details: error instanceof Error ? error.message : String(error),
-        timestamp: new Date().toISOString()
-      });
-    }
-  }
 }
